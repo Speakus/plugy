@@ -26,7 +26,7 @@ void STDCALL displayItemlevel(LPWSTR popup, Unit* ptItem)
 {
 	if (onRealm && (selectModParam==MOD_NO)) return;
 	WCHAR text[0x50];
-	swprintf(text, L"Item Level: %u\n", D2GetItemLevel(ptItem));
+	swprintf(text, getTranslatedString(STR_ITEM_LEVEL), D2GetItemLevel(ptItem));
 	D2SetColorPopup(text,WHITE);
 	wcscat(popup,text);
 }
