@@ -1,17 +1,15 @@
 /*=================================================================
 	File created by Yohann NICOLAS.
+	Add support 1.13d by L'Autour.
 
 	Gestion of the infinity and shared Stash.
 
 =================================================================*/
 
-
-#include "common.h"
 #include "infinityStash.h"
-#include "error.h"
-#include "d2functions.h"
 #include "updateClient.h"
 #include "interface_Stash.h"
+#include "common.h"
 
 #define STASH_TAG 0x5453			//"ST"
 #define JM_TAG 0x4D4A 				//"JM"
@@ -47,7 +45,8 @@ DWORD endStashList(Unit* ptChar, Stash* ptStash)//WORKS
 	while (stash)
 	{
 		if (stash->ptListItem || ((stash == PCPY->currentStash) && firstClassicStashItem(ptChar))) return 0;
-		stash = stash->nextStash;	
+		if (stash->isIndex || (stash->name != NULL && stash->name[0])) return 0;
+		stash = stash->nextStash;
 	}
 	return 1;
 }
@@ -77,10 +76,10 @@ Stash* getLastStash(Stash* ptStash)//WORKS
 
 Stash* newStash(DWORD id)
 {
-	d2_assert( id == 0xFFFFFFFF , "trop de stash", __FILE__, __LINE__);
+	d2_assert( id == 0xFFFFFFFF , "Too much stash", __FILE__, __LINE__);
 	
 	Stash* stash = (Stash*)malloc(sizeof(Stash));//D2AllocMem(memPool, sizeof(Stash),__FILE__,__LINE__,0);
-	d2_assert(!stash , "pb de génération de stash", __FILE__, __LINE__);
+	d2_assert(!stash , "Error on stash allocation.", __FILE__, __LINE__);
 	ZeroMemory(stash, sizeof(Stash));
 	stash->id = id;
 	
@@ -256,6 +255,15 @@ DWORD loadStash(Unit* ptChar, Stash* ptStash, BYTE data[], DWORD startSize, DWOR
 	}
 	curSize += 2;
 
+	// Read flags.
+	int len = strlen((char*)&data[curSize]);
+	if (*(WORD*)&data[curSize + len + 1] != JM_TAG)
+	{
+		ptStash->flags = *(DWORD *)&data[curSize];
+		curSize += 4;
+	}
+
+	// Read Name
 //	if (strlen((char *)&data[curSize]) > 0xF)
 //		*(char *)&data[curSize+0xF] = NULL;
 	if (strlen((char *)&data[curSize]))
@@ -264,6 +272,7 @@ DWORD loadStash(Unit* ptChar, Stash* ptStash, BYTE data[], DWORD startSize, DWOR
 		strcpy(ptStash->name, (char *)&data[curSize]);
 	curSize += strlen((char *)&data[curSize]) + 1;
 
+	// Read inventory.
 	DWORD ret = D2LoadInventory(PCGame, ptChar, (saveBitField*)&data[curSize], 0x60, maxSize-curSize, 0, &nbBytesRead);
 	if (ret) log_msg("loadStash -> D2LoadInventory failed\n");
 	log_msg("Stash loaded (%d : %s)\n", ptStash->id ,ptStash->name);
@@ -272,7 +281,7 @@ DWORD loadStash(Unit* ptChar, Stash* ptStash, BYTE data[], DWORD startSize, DWOR
 	return ret;
 }
 
-DWORD loadStashList(Unit* ptChar, BYTE data[], DWORD maxSize, DWORD* curSize, bool isShared)//WORKS
+DWORD loadStashList(Unit* ptChar, BYTE* data, DWORD maxSize, DWORD* curSize, bool isShared)//WORKS
 {
 	DWORD curStash = 0;
 	Stash* newStash;
@@ -315,6 +324,9 @@ void saveStash(Unit* ptChar, Stash* ptStash, BYTE** data, DWORD* maxSize, DWORD*
 {
 	//write "ST"
 	SETDATA(WORD, STASH_TAG);
+
+	//Write flags.
+	SETDATA(DWORD, ptStash->flags);
 
 	//save name
 	if (ptStash->name)
@@ -385,9 +397,11 @@ void updateSelectedStashClient(Unit* ptChar)//WORKS
 {
 	Stash* newStash = PCPY->currentStash;
 	updateClient(ptChar, UC_SELECT_STASH, newStash->id, newStash->flags, PCPY->flags);
+	updateClient(ptChar, UC_PAGE_NAME, newStash->name);
+
 }
 
-void setSelectedStashClient(DWORD stashId, DWORD stashFlags, DWORD flags)//WORKS
+void setSelectedStashClient(DWORD stashId, DWORD stashFlags, DWORD flags, bool bOnlyItems)//WORKS
 {
 	log_msg("setSelectedStashClient ID:%d, stashFlags:%d, flags:%08X\n", stashId, stashFlags, flags);
 	Unit* ptChar = D2GetClientPlayer();
@@ -395,7 +409,8 @@ void setSelectedStashClient(DWORD stashId, DWORD stashFlags, DWORD flags)//WORKS
 	if (!newStash) do
 		newStash = addStash(ptChar, (stashFlags & 1) == 1);
 	while (newStash->id < stashId);
-	changeToSelectedStash(ptChar, newStash, (stashFlags & 2) == 2, 1);
+	newStash->flags = stashFlags;
+	changeToSelectedStash(ptChar, newStash, bOnlyItems, 1);
 	PCPY->flags = flags;
 }
 
@@ -434,7 +449,7 @@ void swapStash(Unit* ptChar, Stash* curStash, Stash* swpStash)
 	if (!ptChar || !curStash || !swpStash || curStash == swpStash)
 		return;
 	changeToSelectedStash(ptChar, swpStash, 1, 0);
-	updateClient(ptChar, UC_SELECT_STASH, swpStash->id, swpStash->flags | 2, PCPY->flags);
+	updateClient(ptChar, UC_SELECT_STASH, swpStash->id, swpStash->flags | 4, PCPY->flags);
 }
 
 void toggleStash(Unit* ptChar, DWORD page)
@@ -458,6 +473,83 @@ void swapStash(Unit* ptChar, DWORD page, bool toggle)
 	}
 	swapStash(ptChar, curStash, swpStash);
 }
+
+void insertStash(Unit* ptChar)
+{
+	Stash* curStash = PCPY->currentStash;
+	Stash* stash = addStash(ptChar, curStash->isShared);
+	do 
+	{
+		stash->flags = stash->previousStash->flags;
+		stash->name = stash->previousStash->name;
+		stash->ptListItem = stash->previousStash->ptListItem;
+		stash = stash->previousStash;
+	} while (stash != curStash);
+	stash->isIndex = 0;
+	stash->name = NULL;
+	stash->ptListItem = NULL;
+	selectNextStash(ptChar);
+}
+
+bool deleteStash(Unit* ptChar)
+{
+	if (firstClassicStashItem(ptChar) != NULL)
+		return false;
+	//if (D2InventoryGetFirstItem())
+	Stash* stash = PCPY->currentStash;
+	if (stash->nextStash == NULL)
+	{
+		stash->isIndex = 0;
+		stash->name = NULL;
+		return true;
+	}
+	stash->flags = stash->nextStash->flags;
+	stash->name = stash->nextStash->name;
+	if (stash->nextStash->ptListItem != NULL)
+		swapStash(ptChar, stash, stash->nextStash);
+	stash = stash->nextStash;
+	do {
+		stash->flags = stash->nextStash->flags;
+		stash->name = stash->nextStash->name;
+		stash->ptListItem = stash->nextStash->ptListItem;
+		stash = stash->nextStash;
+	} while (stash->nextStash);
+	stash->isIndex = 0;
+	stash->name = NULL;
+	stash->ptListItem = NULL;
+	return true;
+}
+
+
+void renameCurrentStash(Unit* ptChar, char* name)
+{
+	log_msg("renameCurrentStash : %08X, %s\n", ptChar, name);
+	Stash* stash = PCPY->currentStash;
+	int len = 0;
+	if (name != NULL)
+		len = strlen(name);
+	log_msg("renameCurrentStash : %d\n", len);
+	if (stash->name)
+		D2FogMemDeAlloc(stash->name, __FILE__, __LINE__, 0);
+	log_msg("renameCurrentStash 3\n");
+	if (len > 0)
+	{
+		stash->name = (char *)malloc(len);//D2FogMemAlloc(len,__FILE__,__LINE__,0);
+		strcpy(stash->name, name);
+	}
+	else
+		stash->name = NULL;
+	log_msg("renameCurrentStash 4\n");
+}
+
+
+void setCurrentStashIndex(Unit* ptChar, bool isIndex)
+{
+	if (PCPY->currentStash)
+		PCPY->currentStash->isIndex = isIndex;
+	updateSelectedStashClient(ptChar);
+}
+
 
 void selectPreviousStash(Unit* ptChar)
 {
@@ -507,8 +599,15 @@ void selectPreviousIndexStash(Unit* ptChar)
 {
 	selectPreviousStash(ptChar);
 	Stash* selStash = PCPY->currentStash;
-	while (selStash->previousStash && ((selStash->id+1) % nbPagesPerIndex != 0))
+	while (selStash && !selStash->isIndex)
 		selStash = selStash->previousStash;
+
+	if (selStash == NULL)
+	{
+		selStash = PCPY->currentStash;
+		while (selStash->previousStash && ((selStash->id + 1) % nbPagesPerIndex != 0))
+			selStash = selStash->previousStash;
+	}
 
 	if (selStash && (selStash != PCPY->currentStash))
 		selectStash(ptChar, selStash);
@@ -529,11 +628,18 @@ void selectNextIndexStash(Unit* ptChar)
 {
 	selectNextStash(ptChar);
 	Stash* selStash = PCPY->currentStash;
-	while ((selStash->id+1) % nbPagesPerIndex != 0)
+	while (selStash && !selStash->isIndex)
+		selStash = selStash->nextStash;
+
+	if (selStash == NULL)
 	{
-		if (!selStash->isShared && (selStash->id >= maxSelfPages))	break;
-		if (selStash->isShared && (selStash->id >= maxSharedPages)) break;
-		selStash = selStash->nextStash ? selStash->nextStash : addStash(ptChar, PCPY->showSharedStash);;
+		selStash = PCPY->currentStash;
+		while ((selStash->id + 1) % nbPagesPerIndex != 0)
+		{
+			if (!selStash->isShared && (selStash->id >= maxSelfPages))	break;
+			if (selStash->isShared && (selStash->id >= maxSharedPages)) break;
+			selStash = selStash->nextStash ? selStash->nextStash : addStash(ptChar, PCPY->showSharedStash);;
+		}
 	}
 	if (selStash && (selStash != PCPY->currentStash))
 		selectStash(ptChar, selStash);
@@ -839,42 +945,45 @@ void Install_MultiPageStash()
 		log_msg("Patch D2Game for carry1 unique item. (MultiPageStash)\n");
 
 		// Cannot put 2 items carry1 in inventory
-		mem_seek R7(D2Game, 0000, 0000, 55050, 57CA3, 2FE63, 99B03, CF1E3);
+		mem_seek R7(D2Game, 0000, 0000, 55050, 57CA3, 2FE63, 99B03, CF1E3, 6B013);
 		MEMJ_REF4( D2ItemSetPage , version_D2Game >= V111 ? caller_carry1Limit_111 : caller_carry1Limit);
 		//6FC8504F   . E8 94670900    CALL <JMP.&D2Common.#10720>
 		//01FD7CA2   . E8 6329FBFF    CALL <JMP.&D2Common.#10485>
 		//01F9FE62   . E8 47A8FDFF    CALL <JMP.&D2Common.#10608>
 		//6FCB9B02   . E8 9709F7FF    CALL <JMP.&D2Common.#10223>
 		//6FCEF1E2   . E8 47B7F3FF    CALL <JMP.&D2Common.#10012>
+		//6FC8B012   . E8 13F7F9FF    CALL <JMP.&D2Common.#11026>
 
 		// Cannot put 2 items carry1 in inventory by swapping
-		mem_seek R7(D2Game, 0000, 0000, 558D9, 58968, 310E8, 9B6E8, D10C8);
+		mem_seek R7(D2Game, 0000, 0000, 558D9, 58968, 310E8, 9B6E8, D10C8, 6BC78);
 		MEMJ_REF4( D2ItemGetPage , version_D2Game >= V112 ? caller_carry1LimitSwap_112 : version_D2Game >= V111 ? caller_carry1LimitSwap_111 : caller_carry1LimitSwap);
 		//6FC858D8   . E8 175F0900    CALL <JMP.&D2Common.#10719>
 		//01FD8967   . E8 8E1DFBFF    CALL <JMP.&D2Common.#10820>
 		//01FA10E7   . E8 9A96FDFF    CALL <JMP.&D2Common.#10505>
 		//6FCBB6E7   . E8 CAEDF6FF    CALL <JMP.&D2Common.#10370>
 		//6FCF10C7   . E8 F895F3FF    CALL <JMP.&D2Common.#10020>
+		//6FC8BC77   . E8 22E9F9FF    CALL <JMP.&D2Common.#10810>
 
 		if ( version_D2Game >= V111 )
 		{
 			// Cannot put 2 items carry1 in inventory when drop cube
-			mem_seek R7(D2Game, 0000, 0000, 0000, 3D935, 49FD5, 17AD5, D7B75);
+			mem_seek R7(D2Game, 0000, 0000, 0000, 3D935, 49FD5, 17AD5, D7B75, B7B15);
 			MEMJ_REF4( D2CanPutItemInInv , caller_carry1LimitWhenDrop_111);
 			//01FBD934  |. E8 5BD3FCFF    |CALL <JMP.&D2Common.#10855>
 			//01FB9FD4  |. E8 3912FCFF    |CALL <JMP.&D2Common.#10813>
 			//6FC37AD4  |. E8 0535FFFF    |CALL <JMP.&D2Common.#10289>
 			//6FCF7B74  |. E8 232FF3FF    |CALL <JMP.&D2Common.#10133>
+			//6FCD7B14  |. E8 7D32F5FF    |CALL <JMP.&D2Common.#10402>
 		} else {
 			// Cannot put 2 items carry1 in inventory when drop cube
-			mem_seek R7(D2Game, 0000, 0000, 14341, 0000, 0000, 0000, 0000);
+			mem_seek R7(D2Game, 0000, 0000, 14341, 0000, 0000, 0000, 0000, 0000);
 			memt_byte( 0xBA ,0xE8);
 			MEMT_REF4( 0x00000806 , caller_carry1LimitWhenDrop);
 			//6FC44341  |. BA 06080000    |MOV EDX,806
 		}
 
 		// Verif only carry1 out of stash page when pick up an item
-		mem_seek R7(D2Game, 0000, 0000, 1299E, 38E3B, 43F0B, 1209B, D211B);
+		mem_seek R7(D2Game, 0000, 0000, 1299E, 38E3B, 43F0B, 1209B, D211B, B301B);
 		memt_byte( 0x8B ,0xE8);
 		MEMT_REF4( version_D2Game >= V111 ? 0x850C2474 : 0x85102444 , version_D2Game >= V111 ? caller_carry1OutOfStash_111 : caller_carry1OutOfStash);
 		memt_byte( version_D2Game >= V111 ? 0xF6 : 0xC0 ,0x90);
@@ -888,6 +997,8 @@ void Install_MultiPageStash()
 		//6FC3209F  |. 85F6           |TEST ESI,ESI
 		//6FCF211B  |. 8B7424 0C      |MOV ESI,DWORD PTR SS:[ESP+C]
 		//6FCF211F  |. 85F6           |TEST ESI,ESI
+		//6FCD301B  |. 8B7424 0C      |MOV ESI,DWORD PTR SS:[ESP+C]
+		//6FCD301F  |. 85F6           |TEST ESI,ESI
 
 		log_msg("\n");
 	}

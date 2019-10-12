@@ -4,7 +4,7 @@
 ;                                                                                      ;
 ;                                  by Yohann Nicolas                                   ;
 ;                                                                                      ;
-;                                     version 10.01                                    ;
+;                                     version 11.01                                    ;
 ;                                                                                      ;
 ;--------------------------------------------------------------------------------------;
 
@@ -13,17 +13,16 @@ You can make a donation if you want.
 
 
 ******** WARNING ********
-- This plug-in works with LoD version 1.09 to 1.13c and mods based on.
-- This plug-in doesn't work on realms (Battle.net or private).
+- This plug-in works with LoD version 1.09 to 1.13d and mods based on.
+- This plug-in doesn't work on realms Battle.net.
 - All files may be changed since previous version, so uninstall any previous version.
-- Please, use a clean D2dfx.dll before report any crash on starting LoD.
 - PlugY.ini has changed since previous version, use the one in this package.
-- Don't forget to read the part named "COMMENTS ON THE CONFIGURATION FILE".
 - Don't forget to read the PlugY forum at :
     http://d2mods.info/forum/viewforum.php?f=133
 
 
 ******** FEATURES ********
+Each features can be turn on/off via PlugY.ini (see "COMMENTS ON THE CONFIGURATION FILE")
 - Disable access to Battle.net.
 - Infinite storage space in the stash.
 - Shared storage space in the stash.
@@ -43,27 +42,46 @@ You can make a donation if you want.
 - D2 can load all files, even those opened with Microsoft Excel (disabled by default).
 - Display the stats current value (without magical bonus) like Magic/gold find or maximum resistances.
 - Can launch game in windowed mode with some options (lock mouse/resize/on top/noborder).
-- PlugY is localized in English, French, German, Italian, Spanish, Polish.
-- Add following commands (the corresponding functions must be enabled in PlugY.ini) :
+- Add following commands (see "COMMENTS ON THE CONFIGURATION FILE") :
 	/save : Save game without exit.
-	/reload : Reload gamble page.
-	/page 1 : Show normal stats page (stats page must be opened, space not mandatory).
-	/page 2 : Show extra stats page (stats page must be opened, space not mandatory).
-	/page 3 : Show resistance stats page (stats page must be opened, space not mandatory).
-	/page 4 : (beta) Show available runewords (stats page must be opened, space not mandatory).
+	/page 1 : Show normal stats page (stats page must be opened).
+	/page 2 : Show extra stats page (stats page must be opened).
+	/page 3 : Show resistance stats page (stats page must be opened).
+	/page 4 : (beta) Show available runewords (stats page must be opened).
 	/lockmouse : Lock mouse cursor in the window.
-	/lock : same as /lockmouse.
-	/pagename name : (beta) Rename current page stash (the new name isn't saved).
-	/swap page : Swap the content of current stash page with the content of another page (space not mandatory).
-	/toggle page : Swap the content of current stash page with the content of another page in opposing stash shared/personal (space not mandatory).
-	/dlm : Toggle always display mana and life mode. (Since 1.13c, you can click on the bottom of each orbs)
+	/lock : Same as /lockmouse.
+	/unlockmouse : Unlock mouse cursor in the window.
+	/unlock : Same as /unlockmouse.
+	/renamechar newname : Rename your character and save it.
+	/renamepage name : Rename current page stash.
+	/setindex : Set current stash page as index
+	/resetindex : Remove index flag on the current stash page.
+	/insertpage : Insert a new page after the current page.
+	/deletepage : Delete current page if empty.
+	/swap page : Swap the content of current stash page with the content of another page.
+	/toggle page : Swap the content of current stash page with the content of another page in opposing stash shared/personal.
+	/dlm : Toggle always display mana and life mode.
 	/dml : Same as /dlm.
-	/dl : Toggle always display life mode. (Since 1.13c, you can click on the bottom of the orb)
-	/dm : Toggle always display mana mode. (Since 1.13c, you can click on the bottom of the orb)
-	/rename newname : (beta) rename your character and save it. (You must exit the game to update the stats page.)
-	/listcube : (beta) Create a "cube.txt" file in current directory containing all cube's receipts.
-	/maxgold : CHEAT don't use in normal game. Set personnal stash, shared stash and character to max gold.
+	/dl : Toggle always display life mode.
+	/dm : Toggle always display mana mode.
+	/listcube : (beta) Create a "cube.txt" file in save directory containing all cube's receipts.
 
+
+v11.01 changes :
+Compatibily with 1.13d (thanks to L'Autour)
+Add command /unlockmouse : Unlock the mouse
+Add command /unlock : same as /unlockmouse
+Add command /renamepage : stash page name are succefully saved.
+Add command /setindex : Set the current stash page as index (prev/next index button go to an index if exists)
+Add command /resetindex : Remove index flag on the current stash page (prev/next index button go to this index if exists).
+Add command /insertpage : Insert a new page after the current page.
+Add command /deletepage : Delete current page if empty.
+Add localizion in Russian and google traduction for not translated language. (thanks to L'Autour)
+Add an option in PlugY.ini to select shared stash (instead of personal one) on character loading.
+Rename command /rename to /renamechar.
+Remove unfinished command /reload.
+
+v11.00 changes : Unofficial version supporting LOD 1.13d
 
 v10.01 changes :
 - Add windowed mode.
@@ -334,6 +352,7 @@ v1.00 features (can all be easily enabled or disabled) :
 - PlugY.ini
 - PlugY\PlugYFixed.ini
 - PlugY\PlugYDefault.ini
+- PlugY\LocalizedStrings.ini
 - PlugY\EmptyPage.dc6
 - PlugY\SharedGoldBtns.dc6
 - PlugY\StashBtns.dc6
@@ -378,6 +397,7 @@ So the new installation is :
    D:\D2Mod\MyMod\PlugY\UnassignSkillsBtns.dc6
    D:\D2Mod\MyMod\PlugY\UnassignStatsBtns.dc6
    D:\D2Mod\MyMod\PlugY\statsinterface.txt
+   D:\D2Mod\MyMod\PlugY\LocalizedStrings.ini
    D:\D2Mod\MyMod\PlugY.ini
    D:\D2Mod\MyMod\PlugY.exe
    D:\D2Mod\MyMod2\PlugY\SharedGoldBtns.dc6
@@ -391,6 +411,7 @@ So the new installation is :
    D:\D2Mod\MyMod2\PlugY\UnassignSkillsBtns.dc6
    D:\D2Mod\MyMod2\PlugY\UnassignStatsBtns.dc6
    D:\D2Mod\MyMod2\PlugY\statsinterface.txt
+   D:\D2Mod\MyMod2\PlugY\LocalizedStrings.ini
    D:\D2Mod\MyMod2\PlugY.ini
    D:\D2Mod\MyMod2\PlugY.exe
 
@@ -517,7 +538,7 @@ Add params to transmit to LoD on his command line.
 Params give to PlugY.exe are also transmitted to LoD on his command line.
 By default no param are trasmited.
 Most common switch are (without quote) :
-"-w" open LoD in windowed form.
+"-w" open LoD in windowed form. (See WINDOWED section instead)
 "-direct" use files in directory instead of those in mpq.
 "-txt" recompile txt files before launch a game.
 Following are default values, between {} are some examples values with descriptions :
@@ -549,17 +570,36 @@ Separate each dll file name by the character pipe (|)
 - DllToLoad=			{(empty): load nothing; D2extra.dll|myDll.dll: Load both D2extra.dll and myDll.dll}
 - DllToLoad2=			{(empty): Same as DlltoLoad}
 
-Activate a new command in PlugY. In parenthesis is the condition to be able to use the command.
-"/dlm" toggle the state of AlwaysDisplayLifeAndManaValues (AlwaysDisplayLifeAndManaValues>0)
-"/page x" Go to the page x in the extra stats page.
-"/save" Save the game without exit (LoD 1.11 and 1.11b only).
+Activate some new commands in PlugY. In parenthesis is the condition to be able to use the command.
+/save : Save game without exit (LoD 1.11 minimum).
+/page 1 : Show normal stats page (stats page must be opened, space not mandatory).
+/page 2 : Show extra stats page (stats page must be opened, space not mandatory).
+/page 3 : Show resistance stats page (stats page must be opened, space not mandatory).
+/page 4 : (beta) Show available runewords (stats page must be opened, space not mandatory).
+/lockmouse : Lock mouse cursor in the window.
+/lock : Same as /lockmouse.
+/unlockmouse : Unlock mouse cursor in the window.
+/unlock : Same as /unlockmouse.
+/renamechar newname : Rename your character and save it. (You must exit the game to update the stats page.)
+/renamepage name : Rename current page stash (MultiStash activated).
+/setindex : Set current stash page as index (prev/next index button go to an index if exists) (MultiStash activated).
+/resetindex : Remove index flag on the current stash page (MultiStash activated).
+/insertpage : Insert a new page after the current page (MultiStash activated).
+/deletepage : Delete current page if empty (MultiStash activated).
+/swap page : Swap the content of current stash page with the content of another page (space not mandatory) (MultiStash activated).
+/toggle page : Swap the content of current stash page with the content of another page in opposing stash shared/personal (space not mandatory) (MultiStash activated).
+/dlm : Toggle always display mana and life mode. (Since 1.13c, you can click on the bottom of each orbs)
+/dml : Same as /dlm.
+/dl : Toggle always display life mode. (Since 1.13c, you can click on the bottom of the orb)
+/dm : Toggle always display mana mode. (Since 1.13c, you can click on the bottom of the orb)
+/listcube : (beta) Create a "cube.txt" file in current directory containing all cube's receipts (LoD 1.10 minimum).
 - ActiveCommands=0 		{0:Disabled; 1:Enabled}
 
 Quit D2, if PlugY failed to installed all features.
 Disable it only if you know what you do.
 - ActiveCheckMemory=1
 
-Activate hidden or not-finished feature. (don't use it)
+Activate hidden or not finished feature. (don't use it)
 - ActiveAllOthersFeatures=0 	{0:Disabled; 1:Enabled}
 
 
@@ -643,6 +683,7 @@ Following are default values, between {} are some examples values with descripti
 - MaxPersonnalPages=0 		{0:Infinite number of personnal pages; 1000: Maximum of 1000 shared pages}
 - ActiveSharedStash=0		{0:Disabled; 1:Enabled if ActiveMultiPageStash=1}
 - SeparateHardcoreStash=1	{0:Same shared stash for HC and SC; 1:Use 2 differents stashes}
+- OpenSharedStashOnLoading=0	{0:Disabled; 1:Select shared stash (instead of personal one) on character loading}
 - SharedStashFilename=SharedStashSave	{xxx: The filename will be "_LOD_xxx.sss"}
 - displaySharedSetItemNameInGreen=1 	{0:Disabled; 1:Enabled, set items in stash are their name displayed in green on other sets items.}
 - MaxSharedPages=0 		{0:Infinite number of shared pages; 5000: Maximum of 5000 shared pages}
@@ -785,6 +826,7 @@ PS : Sorry for english faults ;)
 - Blizzard for making Diablo2 and Lord of Destruction.
 - Kingpin, Afj666, Joel, SVR, Myrdinn for their great help.
 - Pralinor fo his help in the convertion to 1.12.
+- L'Autour fo his help in the convertion to 1.13d.
 - ChaosEnergy for testing and his translation in German.
 - Char & Darque in the correction of my english.
 - Shaitane, K&V, themastercaster, raspa and onyx for testing.
@@ -799,5 +841,6 @@ PS : Sorry for english faults ;)
 	* Italian : ItalianPlayer
 	* Spanish : Acrerune
 	* Polish : Serdel
+	* Russian : L'Autour
 
 ;--------------------------------------------------------------------------------------;

@@ -5,15 +5,12 @@
 
 =================================================================*/
 
-// Core Class Headers
+#include "error.h"
+#include "INIfile.h"
+#include "parameters.h"		// loadParameters()
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "common.h"
-#include "error.h"
-#include "parameters.h"		// loadParameters()
-#include "D2functions.h"
-#include "INIfile.h"
 
 
 #define PARAMETERS_FILENAME "PlugY.ini"
@@ -37,7 +34,7 @@
 #include "extraOptions.h"
 #include "commands.h"
 #include "language.h"
-extern bool displayGreenSetItemIncludeSharedStash;
+#include "windowed.h"
 
 
 char* modDataDirectory = "PlugY";
@@ -97,6 +94,7 @@ const char* S_maxSelfPages = "MaxPersonnalPages";
 const char* S_nbPagesPerIndex = "NbPagesPerIndex";
 const char* S_nbPagesPerIndex2 = "NbPagesPerIndex2";
 const char* S_active_sharedStash = "ActiveSharedStash";
+const char* S_openSharedStashOnLoading = "OpenSharedStashOnLoading";
 const char* S_maxSharedPages = "MaxSharedPages";
 const char* S_sharedStashFilename = "SharedStashFilename";
 const char* S_separateHardSoftStash = "SeparateHardcoreStash";
@@ -179,6 +177,10 @@ const char* S_USER = "USER:\t";
 const char* S_FIXED = "FIXED:\t";
 
 
+// Convert 4 char code in a DWORD code
+#define BIN(A,B,C,D) ((DWORD)A) + (((DWORD)B) << 8) + (((DWORD)C) << 16) + (((DWORD)D) << 24)
+
+
 #define GET_PRIVATE_PROFILE_STRING(S,F,D)\
 if (!iniFixedFile->GetPrivateProfileString(S, F, NULL, buffer, maxSize)) \
 if (!iniFile->GetPrivateProfileString(S, F, NULL, buffer, maxSize)) \
@@ -194,7 +196,6 @@ if (!iniDefaultFile->GetPrivateProfileString(S, F, D, buffer, maxSize)) \
 	 log_msg(S_DLL); \
 else log_msg(S_DEFAULT); \
 else log_msg(S_USER)
-
 
 #define GET_PRIVATE_PROFILE_STRING3(S,F,D)\
 if (!iniFile->GetPrivateProfileString(S, F, NULL, buffer, maxSize)) \
@@ -449,11 +450,24 @@ void init_VersionText(INIFile* iniFile, INIFile* iniFixedFile, INIFile* iniDefau
 		{
 			switch(version_D2Game)
 			{
-			case V109b: strcpy(buffer, "v 1.09b");break;
-			case V109d: strcpy(buffer, "v 1.09d");break;
-			//case V110:  strcpy(buffer, "v 1.10");break;
-			//case V111:  strcpy(buffer, "v 1.11");break;
-			case V111b: strcpy(buffer, "v 1.11b");break;
+			//case V107: //"v 1.07"
+			//case V108: //"v 1.08"
+			//case V109: //"v 1.09"
+			case V109b: //"v 1.09"
+			case V109d: //"v 1.09"
+			//case V110: //"v 1.10"
+			//case V111: //"v 1.11"
+			case V111b: //"v 1.11"
+			//case V112: //"v 1.12"
+			case V113c: //"v 1.13"
+			case V113d: //"v 1.13"
+			case V114a: //"v 1.14"
+			//case V114b: //"v 1.14b"
+			//case V114c: //"v 1.14c"
+			//case V114d: //"v 1.14d"
+				strcpy(buffer, "v ");
+				strcat(buffer, GetVersionString(version_D2Game));
+				break;
 			default:
 				active_VersionTextChange=0;
 			}
@@ -471,7 +485,6 @@ void init_VersionText(INIFile* iniFile, INIFile* iniFixedFile, INIFile* iniDefau
 	GET_PRIVATE_PROFILE_STRING(S_MAIN_SCREEN, S_active_PrintPlugYVersion, "1");
 	active_PrintPlugYVersion = atoi(buffer) != 0;
 	log_msg("active_PrintPlugYVersion\t= %u\n", active_PrintPlugYVersion);
-
 
 	if (active_PrintPlugYVersion)
 	{
@@ -551,6 +564,10 @@ void init_Stash(INIFile* iniFile, INIFile* iniFixedFile, INIFile* iniDefaultFile
 
 	if (active_sharedStash)
 	{
+		GET_PRIVATE_PROFILE_STRING(S_STASH, S_openSharedStashOnLoading, "0");
+		openSharedStashOnLoading = atoi(buffer) != 0;
+		log_msg("openSharedStashOnLoading\t\t= %u\n", openSharedStashOnLoading);
+
 		GET_PRIVATE_PROFILE_STRING(S_STASH, S_maxSharedPages, "0");
 		maxSharedPages = atoi(buffer) - 1;
 		log_msg("maxSharedPages\t\t\t\t= %u\n", maxSharedPages);
@@ -814,7 +831,7 @@ void loadParameters()
 	INIFile *iniFixedFile = new INIFile;
 	INIFile *iniDefaultFile = new INIFile;
 
-	srand(time(NULL));
+	srand((UINT)time(NULL));
 
 	log_msg("***** PARAMETERS *****\n");
 	if (iniFile->InitReadWrite(PARAMETERS_FILENAME, INIFILE_READ, 0))

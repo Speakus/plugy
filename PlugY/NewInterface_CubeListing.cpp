@@ -5,242 +5,266 @@
 
 =================================================================*/
 
-#include "common.h"
-#include "error.h"
-#include "d2functions.h"
 #include "updateClient.h"
+#include "common.h"
 #include <stdio.h>
 #include <direct.h>			// _getcwd()
 
 
 const char* CUBEFORMULA_FILE = "cube.txt";
-const char * STRING_ERROR="***Error***";
+const LPCWSTR STRING_ERROR = L"***Error***";
+bool InNoSocket;
 
-
-#define BUF (&buf[strlen(buf)])
-
+#define BUF (&buf[*len])
+#define PRINT *len += swprintf
 
 /*
 6FC9275F  |. E8 ECCCFFFF    |CALL D2Game.6FC8F450                    ; \D2Game.6FC8F450
-
-
 */
-void printOutput(CubeOutput* output, char* buf, BYTE* nbOutputs)
+void printOutputItem(CubeOutput* output, LPWSTR buf, LPINT len, LPINT nbOutputs)
 {
-	if (!output->outputType)
+	if (output->outputType == 0)
 		return;
-	if (*nbOutputs)
-		sprintf(BUF," + ");
+	if (*nbOutputs > 0)
+		PRINT(BUF, L" + ");
 	*nbOutputs += 1;
 
 	if (output->outputType == 1) {
-		sprintf(BUF,"Cow Portal");
+		PRINT(BUF, getLocalString(STR_COW_PORTAL));
 		return;
 	} else if (output->outputType == 2) {
-		sprintf(BUF,"Pandemonium Portal");
+		PRINT(BUF, getLocalString(STR_PANDEMONIUM_PORTAL));
 		return;
 	} else if (output->outputType == 3) {
-		sprintf(BUF,"Pandemonium Final Portal");
+		PRINT(BUF, getLocalString(STR_PANDEMONIUM_FINAL_PORTAL));
 		return;
 	}
-	
+
 	if ((output->quantityOrNbSockets>1) && !output->haveSockets)
-		sprintf(BUF,"%u ", output->quantityOrNbSockets);
+	{
+		if (output->quantityOrNbSockets = 255)
+			PRINT(BUF, L"%s ", getLocalString(STR_FULL));
+		else
+			PRINT(BUF, L"%u ", output->quantityOrNbSockets);
+	}
 
 	if (output->repair)
-		sprintf(BUF,"repair ");
+		PRINT(BUF, L"%s ", getLocalString(STR_REPAIR));
+
+	if (output->repair && output->recharge)
+		PRINT(BUF, L"%s ", getLocalString(STR_AND));
 
 	if (output->recharge)
-		sprintf(BUF,"recharge ");
-
-	if (output->isEthereal)
-		sprintf(BUF,"ethereal ");
+		PRINT(BUF, L"%s ", getLocalString(STR_RECHARGE));
 
 	if (output->destroysFillers)
-		sprintf(BUF,"destroys Fillers ");
+		PRINT(BUF, L"%s ", getLocalString(STR_DESTROY_FILLERS));
 
 	if (output->removeFillers)
-		sprintf(BUF,"remove Fillers ");
+		PRINT(BUF, L"%s ", getLocalString(STR_REMOVE_FILLERS));
 
 	if (output->regeneratesUnique)
-		sprintf(BUF,"regenerate ");
+		PRINT(BUF, L"%s ", getLocalString(STR_REGENERATE));
 
 	if (output->upgradeToExceptional)
-		sprintf(BUF,"exceptional ");
+		PRINT(BUF, L"%s ", getLocalString(STR_UPGRADE_TO_EXCEPTIONAL));
 
 	if (output->upgradeToElite)
-		sprintf(BUF,"elite ");
+		PRINT(BUF, L"%s ", getLocalString(STR_UPGRADE_TO_ELITE));
 
+	if (output->isEthereal)
+		PRINT(BUF, L"%s ", getLocalString(STR_ETHERAL));
 
 	if (output->isSpecificItem) {
 		if (output->quality == ITEMQUALITY_UNIQUE)
 		{
 			UniqueItemsBIN* uniqueItems = SgptDataTables->uniqueItems + output->specificID-1;
-			LPWSTR string = D2GetStringFromIndex(uniqueItems->uniqueNameId);
-			wcstombs(BUF, string, wcslen(string)+1);
+			PRINT(BUF, D2GetStringFromIndex(uniqueItems->uniqueNameId));
 		} else if (output->quality == ITEMQUALITY_SET) {
 			SetItemsBIN* setItems = SgptDataTables->setItems + output->specificID-1;
-			LPWSTR string = D2GetStringFromIndex(setItems->setNameId);
-			wcstombs(BUF, string, wcslen(string)+1);
+			PRINT(BUF, D2GetStringFromIndex(setItems->setNameId));
 		} else {
-			sprintf(BUF,STRING_ERROR);return;
+			PRINT(BUF,STRING_ERROR);return;
 		}
 	} else {
 		switch (output->quality)
 		{
-			case 1:sprintf(BUF,"Cracked ");break;
-			case 2:sprintf(BUF,"Normal ");break;
-			case 3:sprintf(BUF,"Superior ");break;
-			case 4:sprintf(BUF,"Magic ");break;
-			case 5:sprintf(BUF,"Set ");break;
-			case 6:sprintf(BUF,"Rare ");break;
-			case 7:sprintf(BUF,"Unique ");break;
-			case 8:sprintf(BUF,"Crafted ");break;
-			case 9:sprintf(BUF,"Tempered ");break;
+			case 1:PRINT(BUF, L"%s ", getLocalString(STR_CRACKED));break;
+			case 2:PRINT(BUF, L"%s ", getLocalString(STR_NORMAL));break;
+			case 3:PRINT(BUF, L"%s ", getLocalString(STR_SUPERIOR));break;
+			case 4:PRINT(BUF, L"%s ", getLocalString(STR_MAGIC));break;
+			case 5:PRINT(BUF, L"%s ", getLocalString(STR_SET));break;
+			case 6:PRINT(BUF, L"%s ", getLocalString(STR_RARE));break;
+			case 7:PRINT(BUF, L"%s ", getLocalString(STR_UNIQUE));break;
+			case 8:PRINT(BUF, L"%s ", getLocalString(STR_CRAFTED));break;
+			case 9:PRINT(BUF, L"%s ", getLocalString(STR_TEMPERED));break;
 		}
-		ItemsBIN* items;LPWSTR string;
 		switch (output->outputType)
 		{
-			case 0xFC:
-				items = D2GetItemsBIN(output->ID);
-				string = D2GetStringFromIndex(items->NameStr);
-				wcstombs(BUF, string, wcslen(string)+1);
-				break;
-			case 0xFD:
-				getTypeAString(output->ID,BUF,50);
-//				WCHAR string[50];
-//				getTypeString(input->ID,string,50);
-//				wcstombs(BUF, string, wcslen(string)+1);
-				break;
-			case 0xFE: sprintf(BUF,"Item");break;
-			case 0xFF: sprintf(BUF,"Item of the same type");break;
-			default: sprintf(BUF,STRING_ERROR);return;
+		case 0xFC:
+		{
+			ItemsBIN* items = D2GetItemsBIN(output->ID);
+			PRINT(BUF, StripGender(D2GetStringFromIndex(items->NameStr)));
+			break;
+		}
+		case 0xFD:
+		{
+			ItemTypesBIN* itemTypeData = D2GetItemTypesBIN(output->ID);
+			if (!itemTypeData)
+				PRINT(BUF, L"Unknow Item Type");
+			else
+				PRINT(BUF, getLocalTypeString(itemTypeData->code));
+			break;
+		}
+		case 0xFE: PRINT(BUF, L"%s", getLocalString(STR_ITEM)); break;
+		case 0xFF: PRINT(BUF, L"%s", getLocalString(STR_ITEM_SAME_TYPE)); break;
+		default: PRINT(BUF, L"%s ", STRING_ERROR); return;
 		}
 	}
-	if ((output->quantityOrNbSockets>1) && (output->haveSockets==1))
-		sprintf(BUF," with %u sockets", output->quantityOrNbSockets);
+	if (output->haveSockets == 1 || InNoSocket)
+	{
+		PRINT(BUF, L" ");
+		if (output->quantityOrNbSockets >= 1)
+			PRINT(BUF, getLocalString(STR_WITH_N_SOCKETS), output->quantityOrNbSockets);
+//		else if (output->quantityOrNbSockets == 1)
+	//			PRINT(BUF, getLocalString(STR_WITH_ONE_SOCKET));
+		else
+			PRINT(BUF, getLocalString(STR_WITH_SOCKETS));
+	}
 }
 
 
-void printInput(CubeInput* input, char* buf, BYTE* nbInputs)//maxsize)
+void printInputItem(CubeInput* input, LPWSTR buf, LPINT len, LPINT nbInputs)//maxsize)
 {
 	if (!input->byItemID && !input->byItemTypeID)
 		return;
 	if (*nbInputs)
-		sprintf(BUF," + ");
+		PRINT(BUF, L" + ");
 
 	BYTE nb = input->quantity > 0 ? input->quantity : 1;
 	*nbInputs += nb;
-	if (nb>1)
-		sprintf(BUF,"%u ", nb);
+	if (nb > 1)
+		PRINT(BUF, L"%u ", nb);
 
 	if (input->isEthereal)
-		sprintf(BUF,"ethereal ");
+		PRINT(BUF, L"%s ", getLocalString(STR_ETHERAL));
 
 	if (input->isNotEthereal)
-		sprintf(BUF,"not ethereal ");
+		PRINT(BUF, L"%s ", getLocalString(STR_NOT_ETHERAL));
 
 	if (input->isNotRuneword)
-		sprintf(BUF,"not runeword ");
+		PRINT(BUF, L"%s ", getLocalString(STR_NOT_RUNEWORD));
 
 	if (input->isBasic)
-		sprintf(BUF,"basic ");
+		PRINT(BUF, L"%s ", getLocalString(STR_BASIC));
 
 	if (input->isExceptional)
-		sprintf(BUF,"exceptional ");
+		PRINT(BUF, L"%s ", getLocalString(STR_EXCEPTIONAL));
 
 	if (input->isElite)
-		sprintf(BUF,"elite ");
+		PRINT(BUF, L"%s ", getLocalString(STR_ELITE));
 
 	if (input->isSpecificItem) {
 		if (input->quality == ITEMQUALITY_UNIQUE)
 		{
-			UniqueItemsBIN* uniqueItems = SgptDataTables->uniqueItems + input->specificID-1;
-			LPWSTR string = D2GetStringFromIndex(uniqueItems->uniqueNameId);
-			wcstombs(BUF, string, wcslen(string)+1);
-		} else if (input->quality == ITEMQUALITY_SET) {
-			SetItemsBIN* setItems = SgptDataTables->setItems + input->specificID-1;
-			LPWSTR string = D2GetStringFromIndex(setItems->setNameId);
-			wcstombs(BUF, string, wcslen(string)+1);
-		} else {
-			sprintf(BUF,STRING_ERROR);return;
+			UniqueItemsBIN* uniqueItems = SgptDataTables->uniqueItems + input->specificID - 1;
+			PRINT(BUF, StripGender(D2GetStringFromIndex(uniqueItems->uniqueNameId)));
 		}
-	} else {
+		else if (input->quality == ITEMQUALITY_SET) {
+			SetItemsBIN* setItems = SgptDataTables->setItems + input->specificID - 1;
+			PRINT(BUF, StripGender(D2GetStringFromIndex(setItems->setNameId)));
+		}
+		else {
+			PRINT(BUF, L"%s ", STRING_ERROR); return;
+		}
+	}
+	else {
 		switch (input->quality)
 		{
-			case 1:sprintf(BUF,"Cracked ");break;
-			case 2:sprintf(BUF,"Normal ");break;
-			case 3:sprintf(BUF,"Superior ");break;
-			case 4:sprintf(BUF,"Magic ");break;
-			case 5:sprintf(BUF,"Set ");break;
-			case 6:sprintf(BUF,"Rare ");break;
-			case 7:sprintf(BUF,"Unique ");break;
-			case 8:sprintf(BUF,"Crafted ");break;
-			case 9:sprintf(BUF,"Tempered ");break;
+		case 1:PRINT(BUF, L"%s ", getLocalString(STR_CRACKED)); break;
+		case 2:PRINT(BUF, L"%s ", getLocalString(STR_NORMAL)); break;
+		case 3:PRINT(BUF, L"%s ", getLocalString(STR_SUPERIOR)); break;
+		case 4:PRINT(BUF, L"%s ", getLocalString(STR_MAGIC)); break;
+		case 5:PRINT(BUF, L"%s ", getLocalString(STR_SET)); break;
+		case 6:PRINT(BUF, L"%s ", getLocalString(STR_RARE)); break;
+		case 7:PRINT(BUF, L"%s ", getLocalString(STR_UNIQUE)); break;
+		case 8:PRINT(BUF, L"%s ", getLocalString(STR_CRAFTED)); break;
+		case 9:PRINT(BUF, L"%s ", getLocalString(STR_TEMPERED)); break;
 		}
 		if (input->byItemTypeID) {
-			getTypeAString(input->ID,BUF,50);
-		} else if (input->ID == 0xFFFF) {
-			sprintf(BUF,"Item");
-		} else {
+			ItemTypesBIN* itemTypeData = D2GetItemTypesBIN(input->ID);
+			if (!itemTypeData)
+				PRINT(BUF, L"Unknow Item Type");
+			else
+				PRINT(BUF, getLocalTypeString(itemTypeData->code));
+		}
+		else if (input->ID == 0xFFFF) {
+			PRINT(BUF, getLocalString(STR_ITEM));
+		}
+		else {
 			ItemsBIN* items = D2GetItemsBIN(input->ID);
-			LPWSTR string = D2GetStringFromIndex(items->NameStr);
-			wcstombs(BUF, string, wcslen(string)+1);
+			PRINT(BUF, StripGender(D2GetStringFromIndex(items->NameStr)));
 		}
 	}
 	if (input->includeUpgradedVersions && !input->isElite)
-		sprintf(BUF,"(or upgraded) ");
+		PRINT(BUF, L" %s", getLocalString(STR_INCLUDE_UPGRADED));
 
 	if (input->haveNoSocket)
-		sprintf(BUF," with no socket");
-
+	{
+		PRINT(BUF, L" %s", getLocalString(STR_WITHOUT_SOCKET));
+		InNoSocket = true;
+	}
 	if (input->haveSockets)
-		sprintf(BUF," with sockets");
+		PRINT(BUF, L" %s", getLocalString(STR_WITH_SOCKETS));
 }
 
-DWORD print(CubeMainBIN* curForm, char* buf, DWORD)//maxsize)
+DWORD print(CubeMainBIN* curForm, LPWSTR buf, LPINT len, DWORD)//maxsize)
 {
 	if (!buf || !curForm || !curForm->enabled) return 0;
 
-	BYTE realNbInputs=0;
-	printInput(&curForm->input1, buf, &realNbInputs);
-	printInput(&curForm->input2, buf, &realNbInputs);
-	printInput(&curForm->input3, buf, &realNbInputs);
-	printInput(&curForm->input4, buf, &realNbInputs);
-	printInput(&curForm->input5, buf, &realNbInputs);
-	printInput(&curForm->input6, buf, &realNbInputs);
-	printInput(&curForm->input7, buf, &realNbInputs);
+	InNoSocket = false;
+	int realNbInputs=0;
 
+	printInputItem(&curForm->input1, buf, len, &realNbInputs);
+	printInputItem(&curForm->input2, buf, len, &realNbInputs);
+	printInputItem(&curForm->input3, buf, len, &realNbInputs);
+	printInputItem(&curForm->input4, buf, len, &realNbInputs);
+	printInputItem(&curForm->input5, buf, len, &realNbInputs);
+	printInputItem(&curForm->input6, buf, len, &realNbInputs);
+	printInputItem(&curForm->input7, buf, len, &realNbInputs);
 
 	if (realNbInputs != curForm->numinputs)
 	{
-		sprintf(BUF," *** ERROR : numInputs(%d) != realNbInputs(%d) ***", curForm->numinputs, realNbInputs);
+		PRINT(BUF, L" *** ERROR : numInputs(%d) != realNbInputs(%d) ***", curForm->numinputs, realNbInputs);
 		return 1;
 	}
 
-	sprintf(BUF," => ");
-	BYTE realNbOutputs=0;
-	printOutput(&curForm->output1, buf, &realNbOutputs);
-	printOutput(&curForm->output2, buf, &realNbOutputs);
-	printOutput(&curForm->output3, buf, &realNbOutputs);
+	PRINT(BUF,L" => ");
+	int realNbOutputs=0;
+
+	printOutputItem(&curForm->output1, buf, len, &realNbOutputs);
+	printOutputItem(&curForm->output2, buf, len, &realNbOutputs);
+	printOutputItem(&curForm->output3, buf, len, &realNbOutputs);
 
 
 //	if (curForm->ladder)
 //		sprintf(BUF," [ladder only]");
-	
+
 	if (curForm->minDiff == 1)
-		sprintf(BUF," [Nightmare and Hell only]");
+		PRINT(BUF, L" %s", getLocalString(STR_ONLY_N_H));
 	else if (curForm->minDiff == 2)
-		sprintf(BUF," [Hell only]");
+		PRINT(BUF, L" %s", getLocalString(STR_ONLY_HELL));
 
 	if (curForm->playerClass != 0xFF)
 	{
 		CharStatsBIN* charStats = D2GetCharStatsBIN(curForm->playerClass);
-		sprintf(BUF, " [%s only]", charStats->name);
+		PRINT(BUF, L" (");
+		PRINT(BUF, getLocalString(STR_ONLY_CLASS), charStats->name);
+		PRINT(BUF, L")");
 	}
-	
+
 	if ((curForm->op>0) && (curForm->op!=28))
-		sprintf(BUF, " [op%d(%d,%d)]", curForm->op, curForm->param, curForm->value);
+		PRINT(BUF, L" [op%d(%d,%d)]", curForm->op, curForm->param, curForm->value);
 
 //	if (curForm->version == 100)
 //		sprintf(BUF, " [expansion only]");
@@ -253,54 +277,50 @@ DWORD print(CubeMainBIN* curForm, char* buf, DWORD)//maxsize)
 
 void listAllCubeFormula()
 {
+	log_msg("\n\n********** Print all cube formula **********\n");
+
 	char filename[MAX_PATH];
-	_getcwd( filename, MAX_PATH );
-	if( filename[strlen(filename)] != '\\')
-		strcat(filename, "\\");
+	D2FogGetSavePath(filename, MAX_PATH);
 	strcat(filename, CUBEFORMULA_FILE);
 
 	FILE* file = fopen(filename, "w");
+	if (!file)
+	{
+		log_msg("Failed to open save file.\n");
+		return;
+	}
 
-	if (!file) return;
-
-	log_msg("\n\n********** Print all cube formula **********\n");//SgptDataTables->nbCubemain\n"
-
-	int nbLines = D2GetNbCubeMainBIN();//SgptDataTables->nbCubemain
+	int nbLines = D2GetNbCubeMainBIN();
 	log_msg("nbLines : %d\n",nbLines);
 
-	char buf[300];
+	WCHAR buf[512];
+
+	// Print BOM UTF-16
+	//buf[0] = 0xFEFF;
+	//buf[1] = NULL;
+	//write(buf, 2, 2, file);
+
+	// Print BOM UTF-8
+	//printf(file, "﻿");
+
+	int len = 0;
+	int nbCubeReceipt = 0;
 	for (int i=0; i<nbLines; i++)
 	{
-		buf[0]=NULL;
-		DWORD res = print(D2GetCubeMainBIN(i), buf, 300);//SgptDataTables->cubemain + i;
-		if (res) fprintf(file,"%4u: %s\n",i,buf);
-		if (res) fflush(file);
+		DWORD res = 1;
+		len = 0;
+		buf[len] = NULL;
+		res = print(D2GetCubeMainBIN(i), buf, &len, 512);
+		//wcstombs(bufa, buf, 1024);
+		if (res)
+		{
+			nbCubeReceipt++;
+			fwprintf(file, L"%3u: %s\n", i, buf);
+		}
 	}
 
 	fclose(file);
 	log_msg("\n********** Printing over **********\n\n");
-
-/*	_getcwd( filename, MAX_PATH );
-	if( filename[strlen(filename)] != '\\')
-		strcat(filename, "\\");
-	strcat(filename, "tmp.txt");
-	
-	file = fopen(filename, "w");
-
-	ItemStatCostBIN* itemStatCost;
-	LPWSTR lpText;
-	for (i=0;i<=STATS_ITEM_CHARGED_SKILL_MOD;i++)
-	{
-		buf[0]='\0';
-		itemStatCost = D2GetItemStatCostBIN(i);
-		lpText = D2GetStringFromIndex(itemStatCost->descstrpos);
-		wcstombs(&buf[0],lpText,100);
-		strcat(buf,"\t - \t");
-		lpText = D2GetStringFromIndex(itemStatCost->descstrneg);
-		wcstombs(&buf[strlen(buf)],lpText,100);
-		fprintf(file,"%03d  %03X \t-  %s\n",i,i,buf);
-	}
-	fclose(file);*/
 }
 
 /*================================= END OF FILE =================================*/

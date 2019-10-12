@@ -4,7 +4,7 @@
 ;                                                                                      ;
 ;                                  par Yohann Nicolas                                  ;
 ;                                                                                      ;
-;                                     version 10.01                                    ;
+;                                     version 11.01                                    ;
 ;                                                                                      ;
 ;--------------------------------------------------------------------------------------;
 
@@ -14,19 +14,17 @@ Vous pouvez y faire un don si vous le souhaitez.
 
 
 ******** ATTENTION ********
-- Ce plugin fonctionne sur LoD version 1.09 à 1.13c et sur leurs mods.
-- Ce plugin ne fonctionne pas sur les royaumes (Battle.net ou privé).
+- Ce plugin fonctionne sur LoD version 1.09 à 1.13d et sur leurs mods.
+- Ce plugin ne fonctionne pas sur les royaumes Battle.net.
 - Tous les fichiers ont changés depuis les versions précédentes, donc déinstaller toutes les versions précédentes.
-- S'il vous plait, utilisé le D2gfx.dll non modifié avant de rapporter une erreur.
 - PlugY.ini a été modifié depuis les versions précédentes, utiliser celui fourni dans cette archive.
-- Ne pas oubliez de lire la partie nommée "COMMENTAIRES SUR LE FICHIER DE CONFIGURATION".
-- Les moddeurs devraient lire la version anglaise de ce readme.
 - N'oubliez pas de lire les forums :
     http://forum.judgehype.com/judgehype/ModsetModding/liste_sujet-1.htm
     http://d2mods.info/forum/viewforum.php?f=133 (anglais)
 
 
 ******** CARACTERISTIQUES ********
+Toutes ces fonctions peuvent être activé/désactivé via PlugY.ini (voir "COMMENTAIRES SUR LE FICHIER DE CONFIGURATION")
 - Désactive l'accès à Battle.net
 - Espace de stockage infini dans le coffre !
 - Espace de stockage partagé dans le coffre !
@@ -46,26 +44,46 @@ Vous pouvez y faire un don si vous le souhaitez.
 - D2 peut charger tout les fichiers, même ceux ouvert par Microsoft Excel (désactivé par defaut).
 - Affiche la valeur courante des caracs (sans les bonus magiques).
 - Localisé en français, anglais, allemand, italien, espagnol et polonais.
-- Ajout des commandes suivantes (les fonctions correspondantes doivent être activées dans PlugY.ini) :
+- Ajout des commandes suivantes (voir "COMMENTAIRES SUR LE FICHIER DE CONFIGURATION") :
 	/save : Sauvegarde la partie sans quitter.
-	/reload : Recharge la page des paris.
-	/page 1 : Affiche la page des stats de base (la page des stats doit être ouverte, espace non obligatoire).
-	/page 2 : Affiche la page des stats en plus (la page des stats doit être ouverte, espace non obligatoire).
-	/page 3 : Affiche la page des stats de resistances (la page des stats doit être ouverte, espace non obligatoire).
-	/page 4 : (bêta) Affiche la page des mots runiques actifs (la page des stats doit être ouverte, espace non obligatoire).
+	/page 1 : Affiche la page des stats de base (la page des stats doit être ouverte).
+	/page 2 : Affiche la page des stats en plus (la page des stats doit être ouverte).
+	/page 3 : Affiche la page des stats de resistances (la page des stats doit être ouverte).
+	/page 4 : (bêta) Affiche la page des mots runiques actifs (la page des stats doit être ouverte).
 	/lockmouse : Bloque le curseur de la souris dans la fenêtre.
 	/lock : Identique à /lockmouse.
-	/pagename name : (bêta) Renomme la page courante du coffre (Ce nouveau nom n'est pas sauvegardé).
-	/swap page : Echange le contenu de la page actuelle du coffre avec le contenu d'une autre "page" (espace non obligatoire).
+	/unlockmouse : Libère le curseur de la souris de la fenêtre.
+	/unlock : Identique à /unlockmouse.
+	/renamechar newname : Renomme la personnage et le sauvegarde.
+	/renamepage name : Renomme la page courante du coffre.
+	/setindex : La page courante devient un index.
+	/resetindex : Retire la page courante des index.
+	/insertpage : Insère une nouvelle page après la page courante.
+	/deletepage : Supprime la page courante si elle est vide.
+	/swap page : Echange le contenu de la page actuelle du coffre avec le contenu d'une autre "page".
 	/toggle page : Echanger le contenu de la page actuelle du coffre avec le contenu d'une autre "page" du coffre opposé partagé/personnel (espace non obligatoire).
-	/dlm : Inverse le mode d'affichage: Toujours afficher les valeurs de vie et de mana. (Depuis 1.13c, on peut clicker sur le bas de l'orbe)
+	/dlm : Inverse le mode d'affichage: Toujours afficher les valeurs de vie et de mana.
 	/dml : Identique à /dlm.
-	/dl : Inverse le mode d'affichage: Toujours afficher les valeurs de vie. (Depuis 1.13c, on peut clicker sur le bas de l'orbe)
-	/dm : Inverse le mode d'affichage: Toujours afficher les valeurs de mana. (Depuis 1.13c, on peut clicker sur le bas de l'orbe)
-	/rename newname : (bêta) Renomme la personnage et le sauvegarde (Vous devez quitter la partie pour la mise à jour de la page des stats).
-	/listcube : (bêta) Crée un fichier "cube.txt" dans le répertoire courant contenant toutes les formules actives du cube.
-	/maxgold : CHEAT ne pas utiliser en partie normal. Remplit le coffre personnel, celui partagée et le personnage au maximum d'or.
+	/dl : Inverse le mode d'affichage: Toujours afficher les valeurs de vie.
+	/dm : Inverse le mode d'affichage: Toujours afficher les valeurs de mana.
+	/listcube : (bêta) Crée un fichier "cube.txt" dans le répertoire de sauvegarde contenant toutes les formules actives du cube.
 
+
+Changements apportés par la v11.01 :
+Ajout de la compatibilité avec la version 1.13d de LOD. (merci à L'Autour)
+Ajout de la commande /unlockmouse : Libère le curseur de la souris de la fenêtre.
+Ajout de la commande /unlock : Identique à /unlockmouse.
+Ajout de la commande /renamepage name : Renomme la page courante du coffre.
+Ajout de la commande /setindex : La page courante devient un index.
+Ajout de la commande /resetindex : Retire la page courante des index.
+Ajout de la commande /insertpage : Insère une nouvelle page après la page courante.
+Ajout de la commande /deletepage : Supprime la page courante si elle est vide.
+Ajout de la localisation en russe ainsi qu'une traduction Google pour les langue non traduite. (merci à L'Autour)
+Ajout d'une option dans PlugY.ini pour sélectionner le coffre partagé (au lieu du personnel) lors du chargement d'un persos.
+Renomme la commande /rename en /renamechar.
+Suppression de la commande non terminé : /reload.
+
+Changements apportés par la v11.00 : Version non officielle ajoutant le support pour LoD 1.13d
 
 Changements apportés par la v10.01 :
 - Ajout du mode fenêtré.
@@ -281,6 +299,7 @@ Changements apportés par la v2.03 :
 - PlugY.ini
 - PlugY\PlugYFixed.ini
 - PlugY\PlugYDefault.ini
+- PlugY\LocalizedStrings.ini
 - PlugY\EmptyPage.dc6
 - PlugY\SharedGoldBtns.dc6
 - PlugY\StashBtns.dc6
@@ -326,6 +345,7 @@ Alors la configuration classique est ceci :
    D:\D2Mod\MyMod\PlugY\UnassignSkillsBtns.dc6
    D:\D2Mod\MyMod\PlugY\UnassignStatsBtns.dc6
    D:\D2Mod\MyMod\PlugY\statsinterface.txt
+   D:\D2Mod\MyMod\PlugY\LocalizedStrings.ini
    D:\D2Mod\MyMod\PlugY.ini
    D:\D2Mod\MyMod\PlugY.exe
    D:\D2Mod\MyMod2\PlugY\SharedGoldBtns.dc6
@@ -339,6 +359,7 @@ Alors la configuration classique est ceci :
    D:\D2Mod\MyMod2\PlugY\UnassignSkillsBtns.dc6
    D:\D2Mod\MyMod2\PlugY\UnassignStatsBtns.dc6
    D:\D2Mod\MyMod2\PlugY\statsinterface.txt
+   D:\D2Mod\MyMod2\PlugY\LocalizedStrings.ini
    D:\D2Mod\MyMod2\PlugY.ini
    D:\D2Mod\MyMod2\PlugY.exe
 
@@ -440,7 +461,7 @@ Ajoute les paramètres transmis à LoD par sa ligne de commande.
 Les paramètres passé à PlugY.exe sont aussi transmis à LoD par sa ligne de commande.
 Par défaut aucun paramèters ne sont transmis.
 Les paramètres les plus courant sont (sans les guillemets) :
-"-w" lance la LoD en version fenêtrée.
+"-w" lance la LoD en version fenêtrée. (Voir la section WINDOWED à la place)
 "-direct" utilise les fichiers du répertoire à la place des mpq.
 "-txt" recompile les fichiers .txt avant d'antrée dans une partie.
 Ci-dessous, les valeurs par défauts et entre {} des exemples avec leurs significations :
@@ -476,9 +497,28 @@ Ci-dessous, les valeurs par défauts et entre {} des exemples avec leurs signific
 - DllToLoad2=			{(vide): Même chose que DlltoLoad}
 
 Active les nouvelles commandes de PlugY.
-"/dlm" alterne l'état de AlwaysDisplayLifeAndManaValues (AlwaysDisplayLifeAndManaValues>0)
-"/page x" Aller à la page x dans les pages de stats supplémentaires.
-"/save" Sauvegarde la partie sans la quitter (uniquement LoD 1.11 et 1.11b).
+/save : Sauvegarde la partie sans quitter (LoD 1.11 minimum).
+/page 1 : Affiche la page des stats de base (la page des stats doit être ouverte)(espace non obligatoire).
+/page 2 :Affiche la page des stats en plus (la page des stats doit être ouverte).
+/page 3 : Show resistance stats page Affiche la page des stats de resistances (la page des stats doit être ouverte)(espace non obligatoire).
+/page 4 :  (bêta) Affiche la page des mots runiques actifs (la page des stats doit être ouverte)(espace non obligatoire).
+/lockmouse : Bloque le curseur de la souris dans la fenêtre.
+/lock : Identique à /lockmouse.
+/unlockmouse : Libère le curseur de la souris de la fenêtre.
+/unlock : Identique à /unlockmouse.
+/renamechar newname : Renomme la personnage et le sauvegarde. (Vous devez quittez la partie pour mettre à jour la page des stats).
+/renamepage name : Renomme la page courante du coffre (MultiStash activé).
+/setindex : La page courante devient un index (Les boutons d'index vont jusqu'au prochain index s'il en existe un) (MultiStash activé).
+/resetindex : Retire la page courante des index (MultiStash activé).
+/insertpage : Insère une nouvelle page après la page courante (MultiStash activé).
+/deletepage : Supprime la page courante si elle est vide (MultiStash activé).
+/swap page : Echange le contenu de la page actuelle du coffre avec le contenu d'une autre "page" (espace non obligatoire) (MultiStash activé).
+/toggle page : Echanger le contenu de la page actuelle du coffre avec le contenu d'une autre "page" du coffre opposé partagé/personnel (espace non obligatoire) (MultiStash activé).
+/dlm : Inverse le mode d'affichage: Toujours afficher les valeurs de vie et de mana. (Depuis LoD 1.13c, vous pouvez cliquer sur la partie inférieure des orbes)
+/dml : Identique à /dlm.
+/dl : Inverse le mode d'affichage: Toujours afficher les valeurs de vie. (Depuis LoD 1.13c, vous pouvez cliquer sur la partie inférieure des orbes)
+/dm : Inverse le mode d'affichage: Toujours afficher les valeurs de mana. (Depuis LoD 1.13c, vous pouvez cliquer sur la partie inférieure des orbes)
+/listcube : (bêta) Crée un fichier "cube.txt" dans le répertoire de sauvegarde contenant toutes les formules actives du cube. (LoD 1.10 minimum).
 - ActiveCommands=0 		{0:Désactivé; 1:Activé}
 
 Quitte D2, si PlugY if PlugY échoue lors de l'installation de toutes les fonctions.
@@ -568,6 +608,7 @@ Ci-dessous, les valeurs par défauts et entre {} des exemples avec leurs signific
 - NbPagesPerIndex2=100		{50: Les pages indexées (+shift) sont 1,50,100,150,...,max}
 - MaxPersonnalPages=0 		{0:Nombre de pages personnelles illimitées; 1000: Maximum de 1000 pages personnelles}
 - ActiveSharedStash=0		{0:Désactivé; 1:Activé si ActiveMultiPageStash=1}
+- OpenSharedStashOnLoading=0	{0:Désactivé; 1:Sélectionne le coffre partagée (au lieu du personnel) au chargement du perso}
 - SeparateHardcoreStash=1	{0:Même coffre partagé en HC et SC; 1:utilise 2 coffres différents}
 - SharedStashFilename=SharedStashSave	{xxx : Le nom du fichier sera _LOD_xxx.sss}
 - displaySharedSetItemNameInGreen=1 	{0:Désactivé; 1:Activé, Les noms des objets de sets dans le stash sont affichés en vert sur les autres objets de sets.}
@@ -594,6 +635,7 @@ Ci-dessous, les valeurs par défauts et entre {} des exemples avec leurs signific
 
 
 [STAT ON LEVEL UP]
+ATTENTION : CHEAT, NE PAS UTILISER EN PARTIE NORMAL.
 Change le nombre de points de Stats reçus lors d'un gain de niveau.
 Ci-dessous, les valeurs par défauts et entre {} des exemples avec leurs significations :
 - ActiveStatPerLevelUp=0		{0:Désactivé; 1:Activé}
@@ -613,6 +655,7 @@ Ci-dessous, les valeurs par défauts et entre {} des exemples avec leurs signific
 
 
 [SKILL ON LEVEL UP]
+ATTENTION : CHEAT, NE PAS UTILISER EN PARTIE NORMAL.
 Change le nombre de points de skills reçus lors d'un gain de niveau.
 Ci-dessous, les valeurs par défauts et entre {} des exemples avec leurs significations :
 - ActiveSkillPerLevelUp=0		{0:Désactivé; 1:Activé}
@@ -709,6 +752,7 @@ PS : Désolé pour les fôtes mais je n'ai pas envie de corriger ;)
 - Blizzard pour avoir fait Diablo II et Lord of Destruction.
 - Kingpin, Afj666, Joel, SVR, Myrdinn pour leurs aides.
 - Pralinor pour son aide dans la convertion en 1.12.
+- L'Autour pour son aide dans la convertion en 1.13d.
 - ChaosEnergY pour ses beta tests et sa traduction en allemand.
 - Char & Darque pour avoir corrigé mon anglais.
 - Shaitane, K&V, themastercaster, raspa et onyx pour leurs tests.
@@ -723,5 +767,6 @@ PS : Désolé pour les fôtes mais je n'ai pas envie de corriger ;)
 	* Italien : ItalianPlayer
 	* Espagnol : Acrerune
 	* Polonais : Serdel
+	* Russe : L'Autour
 
 ;--------------------------------------------------------------------------------------;

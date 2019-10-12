@@ -1,5 +1,6 @@
 /*=================================================================
 	File created by Yohann NICOLAS.
+	Add support 1.13d by L'Autour.
 
     @file D2wrapper.cpp
     @brief Main Diablo II extra DLL handler.
@@ -8,13 +9,6 @@
 
 =================================================================*/
 
-// Core Class Headers
-#include "common.h"
-#include "error.h"
-#include "d2functions.h"
-#include "customLibraries.h"
-
-/* Beginning of Custom Header */
 #include "globalVariable.h"		// Install_VariableOnRealm()
 #include "commands.h"			// Install_Commands()
 #include "othersFeatures.h"		// Install_ChangeResolution()
@@ -31,45 +25,48 @@
 #include "uberQuest.h"			// Install_UberQuest()
 #include "extraOptions.h"		// Install_AlwaysRegenMapInSP()
 #include "language.h"			// Install_LanguageManagement()
+#include "windowed.h"			// installed with Install_PrintPlugYVersion()
+#include "customLibraries.h"
+#include "common.h"
 
 
-int version_SmackW32=V113;
-int version_D2Common=V113;
-int version_ijl11=V113;
-int version_D2Gdi=V113;
-int version_D2Win=V113;
-int version_D2sound=V113;
-int version_D2MCPCLI=V113;
-int version_D2Launch=V113;
-int version_D2gfx=V113;
-int version_D2Client=V113;
-int version_D2Net=V113;
-int version_D2Lang=V113;
-int version_D2Game=V113;
-int version_D2CMP=V113;
-int version_Bnclient=V113;
-int version_Fog=V113;
-int version_Storm=V113;
+int version_SmackW32 = UNKNOW;
+int version_D2Common = UNKNOW;
+int version_ijl11 = UNKNOW;
+int version_D2Gdi = UNKNOW;
+int version_D2Win = UNKNOW;
+int version_D2sound = UNKNOW;
+int version_D2MCPCLI = UNKNOW;
+int version_D2Launch = UNKNOW;
+int version_D2gfx = UNKNOW;
+int version_D2Client = UNKNOW;
+int version_D2Net = UNKNOW;
+int version_D2Lang = UNKNOW;
+int version_D2Game = UNKNOW;
+int version_D2CMP = UNKNOW;
+int version_Bnclient = UNKNOW;
+int version_Fog = UNKNOW;
+int version_Storm = UNKNOW;
 
 
-DWORD	offset_SmackW32=NULL;
-DWORD	offset_D2Common=NULL;
-DWORD	offset_ijl11=NULL;
-DWORD	offset_D2Gdi=NULL;
-DWORD	offset_D2Win=NULL;
-DWORD	offset_D2sound=NULL;
-DWORD	offset_D2Multi=NULL;
-DWORD	offset_D2MCPCLI=NULL;
-DWORD	offset_D2Launch=NULL;
-DWORD	offset_D2gfx=NULL;
-DWORD	offset_D2Game=NULL;
-DWORD	offset_D2Client=NULL;
-DWORD	offset_D2Net=NULL;
-DWORD	offset_D2Lang=NULL;
-DWORD	offset_D2CMP=NULL;
-DWORD	offset_Bnclient=NULL;
-DWORD	offset_Fog=NULL;
-DWORD	offset_Storm=NULL;
+DWORD	offset_SmackW32 = NULL;
+DWORD	offset_D2Common = NULL;
+DWORD	offset_ijl11 = NULL;
+DWORD	offset_D2Gdi = NULL;
+DWORD	offset_D2Win = NULL;
+DWORD	offset_D2sound = NULL;
+DWORD	offset_D2Multi = NULL;
+DWORD	offset_D2MCPCLI = NULL;
+DWORD	offset_D2Launch = NULL;
+DWORD	offset_D2gfx = NULL;
+DWORD	offset_D2Game = NULL;
+DWORD	offset_D2Client = NULL;
+DWORD	offset_D2Net = NULL;
+DWORD	offset_D2Lang = NULL;
+DWORD	offset_D2CMP = NULL;
+DWORD	offset_Bnclient = NULL;
+DWORD	offset_Fog = NULL;
+DWORD	offset_Storm = NULL;
 // manque : Game.exe D2DDraw.dll D2Direct3D.dll D2Glide.dll
 
 const char* S_SmackW32 =	"SmackW32.dll";
@@ -90,9 +87,6 @@ const char* S_D2CMP =		"D2CMP.dll";
 const char* S_Bnclient =	"Bnclient.dll";
 const char* S_Fog =			"Fog.dll";
 const char* S_Storm =		"Storm.dll";
-
-const char* S_CloneBattles ="CloneBattles.dll";
-const char* S_DarkAlliance ="DarkAlliance.dll";
 
 DWORD loadLibrary( const char* libraryName)
 {
@@ -316,7 +310,7 @@ void loadCustomLibraries()
 
 
 /*
-void getVersion(DWORD addr, DWORD addr111, int* ver, DWORD v109b, DWORD v109d, DWORD v110, DWORD v111, DWORD v111a, DWORD v111b, DWORD v112, DWORD v113, const char * filename)
+void getVersion(DWORD addr, DWORD addr111, int* ver, DWORD v109b, DWORD v109d, DWORD v110, DWORD v111, DWORD v111a, DWORD v111b, DWORD v112, DWORD v113c, DWORD v113d, const char * filename)
 {
 	log_msg("version of %s\t",filename);
 
@@ -338,12 +332,15 @@ void getVersion(DWORD addr, DWORD addr111, int* ver, DWORD v109b, DWORD v109d, D
 	} else if (addr==v112) {
 		*ver = V112;
 		log_msg("1.12\n");
-	} else if (addr==v113) {
-		*ver = V113;
-		log_msg("1.13\n");
+	} else if (addr==v113c) {
+		*ver = V113c;
+		log_msg("1.13c\n");
+	} else if (addr==v113d) {
+		*ver = V113d;
+		log_msg("1.13d\n");
 	} else {
-		*ver = V113;
-		log_msg("unknow, try with 1.13\n");
+		*ver = V113d;
+		log_msg("unknow, try with 1.13d\n");
 	}
 }
 #define GET_VERSION(F,X,Y,A,B,C,D,E,G,H,I) getVersion(*(DWORD*)(offset_##F + 0x##X), *(DWORD*)(offset_##F + 0x##Y), &version_##F, 0x##A, 0x##B, 0x##C, 0x##D, 0x##E, 0x##G, 0x##H, 0x##I, S_##F)
@@ -375,11 +372,14 @@ bool initD2version()
 }
 */
 
-void getVersion(DWORD addr, int* ver, DWORD v109b, DWORD v109d, DWORD v110, DWORD v111, DWORD v111b, DWORD v112, DWORD v113, const char * filename)
+void getVersion(DWORD addr, int* ver, DWORD v109b, DWORD v109d, DWORD v110, DWORD v111, DWORD v111b, DWORD v112, DWORD v113c, int version, const char * filename)
 {
-	log_msg("version of %s\t",filename);
+	log_msg("version of %s\t", filename);
 
-	if (addr==v109b) {
+	if (version >= V113d) {
+		*ver = version;
+		log_msg("%s\n", GetVersionString(version));
+	} else if (addr==v109b) {
 		*ver = V109b;
 		log_msg("1.09b\n");
 	} else if (addr==v109d) {
@@ -397,37 +397,41 @@ void getVersion(DWORD addr, int* ver, DWORD v109b, DWORD v109d, DWORD v110, DWOR
 	} else if (addr==v112) {
 		*ver = V112;
 		log_msg("1.12\n");
-	} else if (addr==v113) {
-		*ver = V113;
-		log_msg("1.13\n");
+	} else if (addr==v113c) {
+		*ver = V113c;
+		log_msg("1.13c\n");
 	} else {
-		*ver = V113;
-		log_msg("unknow, try with 1.13\n");
+		*ver = V113d;
+		log_msg("unknow, try with 1.13d\n");
 	}
 }
-#define GET_VERSION(F,X,A,B,C,D,E,G,H) getVersion(*(DWORD*)(offset_##F + 0x##X), &version_##F, 0x##A, 0x##B, 0x##C, 0x##D, 0x##E, 0x##G, 0x##H, S_##F)
+#define GET_VERSION(F,X,A,B,C,D,E,G,H,V) getVersion(*(DWORD*)(offset_##F + 0x##X), &version_##F, 0x##A, 0x##B, 0x##C, 0x##D, 0x##E, 0x##G, 0x##H, V, S_##F)
 bool initD2version()
 {
+	log_msg("***** Get Game.exe version *****\n");
+	int version = GetD2Version();
+	log_msg("Game.exe version : %i (%s)\n", version, GetVersionString(version));
+
 	log_msg("***** Get dll versions *****\n");
 
 //GET_VERSION(SmackW32
-	GET_VERSION(D2Common,	10CA,	A1E86FDC, B1E86FDC, 72D03B42, F883057E, 16746AC6, 00FE81C3, 74FE85DB);
+	GET_VERSION(D2Common,	10CA,	A1E86FDC, B1E86FDC, 72D03B42, F883057E, 16746AC6, 00FE81C3, 74FE85DB, version);
 //GET_VERSION(ijl11
-	GET_VERSION(D2Gdi,		105,	B4000000, 0B210E00, E4000000, 48000401, 2F000401, 00000000, B7000401);
-	GET_VERSION(D2Win,		1699,	88686F8C, 84686F8C, D094686F, F0030000, 001435E8, 8B088F44, 0013F5E8);
+	GET_VERSION(D2Gdi,		105,	B4000000, 0B210E00, E4000000, 48000401, 2F000401, 00000000, B7000401, version);
+	GET_VERSION(D2Win,		1699,	88686F8C, 84686F8C, D094686F, F0030000, 001435E8, 8B088F44, 0013F5E8, version);
 //GET_VERSION(D2sound
 //GET_VERSION(D2MCPCLI
-	GET_VERSION(D2Launch,	109A,	81E8526F, 01E8526F, 85E8526F, 247C8B00, 00FC6583, 15FF0424, E850E045);
-	GET_VERSION(D2gfx,		10D,	EB000000, 006FA700, 00000010, 2A000401, 19000401, 0B210E00, 00000000);
-	GET_VERSION(D2Client,	17F,	00000000, 14500000, 12500000, 0D814800, 0D812800, 0DA01000, 0DA03000);
-	GET_VERSION(D2Net,		16E1,	78B8A73C, 68B8A73C, 10244C8B, 5349E808, 5EA9E808, 105D8B72, 53B9E808);
-	GET_VERSION(D2Lang,		126D,	FC45048B, F445048B, 02C18313, C4830000, 00C6E045, 8B48408B, 0C75FF0C);
-//	GET_VERSION(D2Game,		1010,	D22A78A1, D22910A1, D43FB0A1, 03E8506F, 53E8506F, 89E8506F, 63E8506F);
-	GET_VERSION(D2Game,		1092,	18968BF1, 38968BF1, 28968BF1, F6335608, C690C5B9, 895FD713, 56535700);
-	GET_VERSION(D2CMP,		1359,	3C686FE0, 38686FE0, 8BF78B56, 4C880424, 07C71824, CCCCCCCC, C7000005);
+	GET_VERSION(D2Launch,	109A,	81E8526F, 01E8526F, 85E8526F, 247C8B00, 00FC6583, 15FF0424, E850E045, version);
+	GET_VERSION(D2gfx,		10D,	EB000000, 006FA700, 00000010, 2A000401, 19000401, 0B210E00, 00000000, version);
+	GET_VERSION(D2Client,	17F,	00000000, 14500000, 12500000, 0D814800, 0D812800, 0DA01000, 0DA03000, version);
+	GET_VERSION(D2Net,		16E1,	78B8A73C, 68B8A73C, 10244C8B, 5349E808, 5EA9E808, 105D8B72, 53B9E808, version);
+	GET_VERSION(D2Lang,		126D,	FC45048B, F445048B, 02C18313, C4830000, 00C6E045, 8B48408B, 0C75FF0C, version);
+//	GET_VERSION(D2Game,		1010,	D22A78A1, D22910A1, D43FB0A1, 03E8506F, 53E8506F, 89E8506F, 63E8506F, version);
+	GET_VERSION(D2Game,		1092,	18968BF1, 38968BF1, 28968BF1, F6335608, C690C5B9, 895FD713, 56535700, version);
+	GET_VERSION(D2CMP,		1359,	3C686FE0, 38686FE0, 8BF78B56, 4C880424, 07C71824, CCCCCCCC, C7000005, version);
 //GET_VERSION(Bnclient
-	GET_VERSION(Fog,		102,	D0000006, 10000001, 00000006, 000042E6, 00004302, 0000483C, 00004B95);
-	GET_VERSION(Storm,		1190,	19E85082, 59E85082, 13C103F6, 0474F685, 8B000321, 3B1074C9, 0D896404);
+	GET_VERSION(Fog,		102,	D0000006, 10000001, 00000006, 000042E6, 00004302, 0000483C, 00004B95, version);
+	GET_VERSION(Storm,		1190,	19E85082, 59E85082, 13C103F6, 0474F685, 8B000321, 3B1074C9, 0D896404, version);
 
 	log_msg("\n\n");
 	return true;
@@ -540,6 +544,8 @@ extern "C" __declspec(dllexport) void* __stdcall Init(LPSTR IniName)
 	unhookLibraries();
 
 	initCustomLibraries();
+
+	loadLocalizedStrings(D2GetLang());
 
 	log_msg("***** ENTERING DIABLO II *****\n\n" );
 

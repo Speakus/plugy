@@ -4,10 +4,9 @@
   Loading parameters from ini file.
 
 =================================================================*/
-
 #pragma once
 
-#define PLUGY_VERSION "10.01"
+#define PLUGY_VERSION "11.01"
 
 #define LOG_FILE "PlugY.log"
 
